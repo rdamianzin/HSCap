@@ -12,6 +12,9 @@ from HSModel import Network
 from utils.signals import generateSignalData
 import time
 
+# para poner un arreglo en el archivo
+# a = np.asarray([1., data_trn[0][0]], dtype="object")
+# np.savetxt("paso.txt", a, delimiter = ",",fmt='%s')
 
    # %% parametros de los espectros
 
@@ -82,7 +85,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 print(model)
 
 start = time.time()
-print("Training started")
+print("Empezando el entrenamiento")
 
 loss_array = []
 
@@ -105,17 +108,17 @@ for epoch in range(num_epochs):
 
         running_loss += loss.item()
 
-    print("epoch: %d\tloss: %0.10f" % (epoch, running_loss))
+    print("epoca: %d\t perdida: %0.10f" % (epoch, running_loss))
     loss_array.append(running_loss)
 
 
 end = time.time()
-print("Training complete. It took %5.2f seconds" % (end - start))
+print("Entrenamiento Completo. Tomo %5.2f segundos" % (end - start))
 
 plt.figure()
-plt.title("Loss")
-plt.xlabel("epoch [num]")
-plt.ylabel("loss [num]")
+plt.title("Perdida")
+plt.xlabel("epoca [num]")
+plt.ylabel("perdida [num]")
 plt.plot(loss_array)
 plt.show()
 
