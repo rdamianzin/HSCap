@@ -11,6 +11,7 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from HSModel import Network
 from utils.signals import generateSignalData
 import time
+import os
 
 # para poner un arreglo en el archivo
 # a = np.asarray([1., data_trn[0][0]], dtype="object")
@@ -38,27 +39,27 @@ noise_std_percent = 0.1
  # %% parametros de entrenamiento
 num_signals = 10000
 num_epochs = 10
-batch_size = 64
+batch_size = 32
 lr = 0.001
 holdout_ratio = 0.7
 
-train_num = round(holdout_ratio * num_signals)
-test_num = num_signals - train_num
-
 # %% Carga Datos de entrenamiento y test
+
+l_dir = os.listdir('./data')
+
+num_signals = len(l_dir)
+
 d_trn = np.zeros((num_signals, signal_len))
 l_trn = np.zeros((num_signals, 1))
-for i in range(5000):
-    j = i + 1
-    d_trn[i, :] = np.genfromtxt('./data/lapiz_lazuli ' + str(j), delimiter=',', dtype=float)
-    l_trn[i] = float(0)
 
-h = 5000
-for i in range(h):
-    j = i + 1
-    print(j, h+i)
-    d_trn[h+i, :] = np.genfromtxt('./data/cafe ' + str(j), delimiter=',', dtype=float)
-    l_trn[h+i] = float(1)
+for i in range(num_signals):
+    p_arch = l_dir[i].split('_')
+    d_trn[i, :] = np.genfromtxt('./data/' + l_dir[i], delimiter=',', dtype=float)
+    l_trn[i] = float(p_arch[1])
+    print('procesando:' + l_dir[i])
+
+train_num = round(holdout_ratio * num_signals)
+test_num = num_signals - train_num
 
 data_std = np.std(d_trn)
 
@@ -121,6 +122,9 @@ plt.xlabel("epoca [num]")
 plt.ylabel("perdida [num]")
 plt.plot(loss_array)
 plt.show()
+
+PATH = './model/t_1_pigment_net.pth'
+torch.save(model.state_dict(), PATH)
 
 # %% Testing
 
