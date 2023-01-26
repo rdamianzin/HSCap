@@ -20,12 +20,27 @@ data_trn = img[50:160, 50:160,:]
 pixel = data_trn[0][0]
 
 data_cln = [[pixel]]
-iguales = 1
 
-for largo in data_trn:
+data_cmp = []
+
+idx_cln = 0
+
+data_trest = data_trn[:, 1:, :]
+
+# primer loop con el primer pixel
+
+for largo in data_trest:
     for ancho in largo:
         if (angulo(ancho, pixel) > 0):
-            data_cln.append([ancho])
+            data_cmp.append([ancho])
     
+# sigo con el siguiente pixel
 
+data_cln.append(data_cmp[0])
+
+data_cmp = data_cmp[1:]
+
+idx_cln = idx_cln + 1
+
+data_paso = data_cln
             
