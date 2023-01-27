@@ -17,6 +17,55 @@ img = envi.open('./img/004.hdr', "./img/004.float")
 
 data_trn = img[50:160, 50:160,:]
 
+# inicializo estructuras
+
+d_renglones, d_colunmas, d_bandas = np.shape(data_trn)
+
+idx_cln = 0
+
+data_cmp = []
+
+data_trest = []
+
+data_cln = []
+
+#aplano la matriz de espectros
+
+for largo in data_trn:
+    for ancho in largo:
+        data_trest.append([ancho])
+
+# Saco todos los duplicados 
+
+while (len(data_trest)):
+    pixel = data_trest[0]
+    
+    data_trest = data_trest[1:]
+    
+    # ojo la longitud del espectro debe de ser variable
+    
+    pixel = np.reshape(pixel, (d_bandas,))
+    
+    data_cln.append([pixel])
+    
+    for largo in data_trest:
+        for ancho in largo:
+            if (angulo(ancho, pixel) > 0):
+                data_cmp.append([ancho])
+    
+    data_trest = data_cmp
+    data_cmp = []
+
+
+
+
+
+
+
+
+
+
+
 pixel = data_trn[0][0]
 
 data_cln = [[pixel]]
@@ -38,9 +87,16 @@ for largo in data_trest:
 
 data_cln.append(data_cmp[0])
 
-data_cmp = data_cmp[1:]
+pixel = data_cmp[0]
 
-idx_cln = idx_cln + 1
+data_trest = data_cmp[1:]
 
-data_paso = data_cln
+data_cmp = []
+
+while (len(data_cmp) > 0):
+    for largo in data_trest:
+        for ancho in largo:
+            if (angulo(ancho, pixel) > 0):
+                data_cmp.append([ancho])
+
             
