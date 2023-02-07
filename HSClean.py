@@ -27,7 +27,7 @@ data_cmp = []
 
 data_trest = []
 
-data_cln = []
+data_clasifica = []
 
 #aplano la matriz de espectros
 
@@ -35,8 +35,12 @@ for largo in data_trn:
     for ancho in largo:
         data_trest.append([ancho])
 
-# Saco todos los duplicados 
+# voy a hacer una lista de clases que esten muy cercanas, empiezo con 0.2
 
+data_clases = []
+
+# %%
+"""
 while (len(data_trest)):
     pixel = data_trest[0]
     
@@ -52,51 +56,46 @@ while (len(data_trest)):
         for ancho in largo:
             if (angulo(ancho, pixel) > 0):
                 data_cmp.append([ancho])
-    
+    print(len(data_trest))
     data_trest = data_cmp
     data_cmp = []
-
-
-
-
-
-
-
-
-
-
-
-pixel = data_trn[0][0]
-
-data_cln = [[pixel]]
-
-data_cmp = []
-
-idx_cln = 0
-
-data_trest = data_trn[:, 1:, :]
-
-# primer loop con el primer pixel
-
-for largo in data_trest:
-    for ancho in largo:
-        if (angulo(ancho, pixel) > 0):
-            data_cmp.append([ancho])
+"""
+# %%
+while (len(data_trest)):
+    pixel = data_trest[0]
     
-# sigo con el siguiente pixel
-
-data_cln.append(data_cmp[0])
-
-pixel = data_cmp[0]
-
-data_trest = data_cmp[1:]
-
-data_cmp = []
-
-while (len(data_cmp) > 0):
+    data_trest = data_trest[1:]
+    
+    pixel = np.reshape(pixel, (d_bandas,))
+    
+    data_clasifica.append([pixel])
+    
     for largo in data_trest:
         for ancho in largo:
-            if (angulo(ancho, pixel) > 0):
+            if (angulo(ancho, pixel) < 0.2):
+                data_clasifica.append([ancho])
+            else:
                 data_cmp.append([ancho])
+    print(len(data_trest))
+    data_trest = data_cmp
+    data_clases.append(data_clasifica)
+    data_cmp = []
+    data_clasifica = []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             
