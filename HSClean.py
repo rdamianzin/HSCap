@@ -4,6 +4,8 @@ import spectral.io.envi as envi
 
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 def norma(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
@@ -21,13 +23,17 @@ data_trn = img[50:160, 50:160,:]
 
 d_renglones, d_colunmas, d_bandas = np.shape(data_trn)
 
-idx_cln = 0
+idx_largo = 0
+
+idx_ancho = 0
 
 data_cmp = []
 
 data_trest = []
 
 data_clasifica = []
+
+data_pixel_clasifica = []
 
 #aplano la matriz de espectros
 
@@ -38,6 +44,8 @@ for largo in data_trn:
 # voy a hacer una lista de clases que esten muy cercanas, empiezo con 0.2
 
 data_clases = []
+
+data_pixel_clases = []
 
 # %%
 """
@@ -72,7 +80,7 @@ while (len(data_trest)):
     
     for largo in data_trest:
         for ancho in largo:
-            if (angulo(ancho, pixel) < 0.2):
+            if (angulo(ancho, pixel) < 0.3):
                 data_clasifica.append([ancho])
             else:
                 data_cmp.append([ancho])
@@ -82,9 +90,11 @@ while (len(data_trest)):
     data_cmp = []
     data_clasifica = []
 
+x = np.linspace(0, 1, 128)
 
-
-
+for y_1 in data_clases:
+    y = np.array(y_1[0])[0]
+    plt.plot(x, y)
 
 
 
