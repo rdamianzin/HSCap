@@ -35,11 +35,17 @@ data_clasifica = []
 
 data_pixel_clasifica = []
 
-#aplano la matriz de espectros
+#aplano la matriz de espectros y le agrgo su posicion en el arreglo original
+# l_2 = l_2.astype(np.float32)
 
 for largo in data_trn:
     for ancho in largo:
-        data_trest.append([ancho])
+        arr_coord = np.float32([idx_largo, idx_ancho])
+        arr_banda_plus = np.concatenate((ancho, arr_coord)) 
+        data_trest.append([arr_banda_plus])
+        idx_ancho = idx_ancho + 1
+    idx_largo = idx_largo + 1
+    idx_ancho = 0
 
 # voy a hacer una lista de clases que esten muy cercanas, empiezo con 0.2
 
