@@ -80,7 +80,7 @@ while (len(data_trest)):
     
     data_trest = data_trest[1:]
     
-    pixel = np.reshape(pixel, (d_bandas,))
+    pixel = np.reshape(pixel, (d_bandas+2,))
     
     data_clasifica.append([pixel])
     
@@ -95,6 +95,12 @@ while (len(data_trest)):
     data_clases.append(data_clasifica)
     data_cmp = []
     data_clasifica = []
+
+
+# x, y = np.int_(i[0][128:])
+
+
+
 
 x = np.linspace(0, 1, 128)
 
