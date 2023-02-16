@@ -39,9 +39,9 @@ noise_std_percent = 0.1
  # %% parametros de entrenamiento
 num_signals = 10000
 num_epochs = 10
-batch_size = 32
+batch_size = 8
 lr = 0.001
-holdout_ratio = 0.7
+holdout_ratio = 0.8
 
 # %% Carga Datos de entrenamiento y test
 
@@ -55,7 +55,7 @@ l_trn = np.zeros((num_signals, 1))
 for i in range(num_signals):
     p_arch = l_dir[i].split('_')
     d_trn[i, :] = np.genfromtxt('./data/' + l_dir[i], delimiter=',', dtype=float)
-    l_trn[i] = float(p_arch[1])
+    l_trn[i] = float(p_arch[1]) - 1.0
     print('procesando:' + l_dir[i])
 
 train_num = round(holdout_ratio * num_signals)
