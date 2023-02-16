@@ -127,5 +127,15 @@ PATH = './model/t_1_pigment_net.pth'
 torch.save(model.state_dict(), PATH)
 
 # %% Testing
+t_tst = torch.tensor([d_trn[999]/data_std])
+t_tst = t_tst.float().to(device)
+o = model(t_tst)
+_, predicted = torch.max(o, 1)
+predicted = predicted.detach().cpu().numpy()
+print(classes[predicted[0]])
+
+
+
+
 
 
