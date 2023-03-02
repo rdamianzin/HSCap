@@ -85,8 +85,11 @@ class DisplayImage(QMainWindow):
         open_act = QAction('Abrir...', self)
         open_act.setShortcut('Ctrl+A')
         open_act.triggered.connect(self.openImageFile)
-        
-        
+        '''
+        procesa_act = QAction('Procesar', self) 
+        procesa_act.setShortcut('Ctrl+P')
+        procesa_act.triggered.connect(self.procesaImagen)
+        '''
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -96,7 +99,10 @@ class DisplayImage(QMainWindow):
         file_menu = menu_bar.addMenu('Archivo')
         file_menu.addAction(open_act)
         
-    # Dialog de archivos , despliega la primera imagen
+        procesa_menu = menu_bar.addMenu('Procesar')
+        
+        
+    #%% Dialog de archivos , despliega la primera imagen
     def openImageFile(self):
         """Despliega la imegen del archivo elegido"""
         hdr_file, _ = QFileDialog.getOpenFileName(self, "Abrir ...", 
@@ -133,7 +139,8 @@ class DisplayImage(QMainWindow):
         self.original_label.setPixmap(QPixmap.fromImage(image).scaled(self.original_label.width(), 
                                                                       self.original_label.height(), 
                                                                       Qt.KeepAspectRatioByExpanding))
-                
+        
+        
         '''
         if image_file:
             image = QImage() # Create QImage instance
