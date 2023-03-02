@@ -6,13 +6,24 @@ Programa Basado en el libro de Joshua Willman
  
  21 de enero de 2023
 """
-# Import necessary modules
+# %% Import necessary modules
+from spectral import *
+
+import spectral.io.envi as envi
+
+import numpy as np
+
+import matplotlib as plt
+
+from PIL import Image
+
 import sys, os, cv2
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel, 
     QFileDialog, QMessageBox, QHBoxLayout, QVBoxLayout, QAction)
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 
+#%% Style Sheet
 style_sheet = """
     QLabel#ImageLabel{
         color: darkgrey;
@@ -22,13 +33,13 @@ style_sheet = """
     QLabel{
         qproperty-alignment: AlignCenter
     }"""
-
+#%% classe principal
 class DisplayImage(QMainWindow):
-
+    #%% Constructor
     def __init__(self):
         super().__init__()
         self.initializeUI()
-
+    #%% Configuracion Ventana Principal
     def initializeUI(self):
         """Tamaño de ventana."""
         self.setMinimumSize(1200, 500)
@@ -37,7 +48,7 @@ class DisplayImage(QMainWindow):
         self.setupWindow()
         self.setupMenu()
         self.show()
-
+    #%% Componentes de la ventna principal
     def setupWindow(self):
         """Configuracion de la ventana principal."""
         # Create two QLabels, one for original image and one for 
@@ -67,7 +78,7 @@ class DisplayImage(QMainWindow):
         container = QWidget()
         container.setLayout(main_h_box)
         self.setCentralWidget(container)
-
+    #%% Componentes del Menu
     def setupMenu(self):
         """Definicion del Menu."""
         # Create actions for file menu
@@ -85,12 +96,45 @@ class DisplayImage(QMainWindow):
         file_menu = menu_bar.addMenu('Archivo')
         file_menu.addAction(open_act)
         
-
+    # Dialog de archivos , despliega la primera imagen
     def openImageFile(self):
         """Despliega la imegen del archivo elegido"""
-        image_file, _ = QFileDialog.getOpenFileName(self, "Abrir ...", 
-            os.getenv('HOME'), "Images (*.png *.jpeg *.jpg *.bmp)")
+        hdr_file, _ = QFileDialog.getOpenFileName(self, "Abrir ...", 
+            os.getenv('HOME'), "HDR (*.hdr)")
+        a_file = hdr_file.split('.')
+        float_file = a_file[0] + '.float'
+
+        img = envi.open(hdr_file, float_file)
         
+        data_img = img[:,:,:]
+
+        l, r, b = data_img.shape
+
+        tipo = (l, r, 3)
+
+        x = 0
+        y = 0
+
+
+        data = np.zeros(tipo, dtype=np.uint8)
+
+        for largo in data_img:
+            for ancho in largo:
+                b1 = int(ancho[40] * 255)
+                b2 = int(ancho[20] * 255)
+                b3 = int(ancho[10] * 255)
+                data[x][y] = [b1, b2, b3]
+                y = y + 1
+            x = x + 1
+            y = 0
+        
+        image = QImage(data.data, data.shape[1], data.shape[0], QImage.Format_RGB888)
+        
+        self.original_label.setPixmap(QPixmap.fromImage(image).scaled(self.original_label.width(), 
+                                                                      self.original_label.height(), 
+                                                                      Qt.KeepAspectRatioByExpanding))
+                
+        '''
         if image_file:
             image = QImage() # Create QImage instance
             image.load(image_file)
@@ -105,7 +149,7 @@ class DisplayImage(QMainWindow):
             self.adjustSize() # Adjust the size of the main window to better fit its contents   
         else:
             QMessageBox.information(self, "Error",
-                "No pude abrir el Archivo ", QMessageBox.Ok)
+                "No pude abrir el Archivo ", QMessageBox.Ok)'''
 
     def convertCVToQImage(self, image_file):
         """Demonstrates how to load a cv image and convert the image to a Qt QImage. 
@@ -120,6 +164,7 @@ class DisplayImage(QMainWindow):
         converted_Qt_image = QImage(cv_image, width, height, bytes_per_line, QImage.Format_RGB888)
         return converted_Qt_image
 
+#%% script principal
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyleSheet(style_sheet)
