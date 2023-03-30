@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
+import json
 
 import torch
 import torch.nn as nn
@@ -61,7 +62,6 @@ for i in range(num_signals):
 train_num = round(holdout_ratio * num_signals)
 test_num = num_signals - train_num
 
-data_std = np.std(d_trn)
 
 # %% preparamos los datasets de entrenamiento y prueba
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -102,7 +102,7 @@ for epoch in range(num_epochs):
 
         optimizer.zero_grad()
 
-        outputs = model(train_signals.unsqueeze(1) / data_std).to(device)
+        outputs = model(train_signals.unsqueeze(1)).to(device)
         loss = criterion(outputs, train_labels)
         loss.backward()
         optimizer.step()
@@ -123,11 +123,27 @@ plt.ylabel("perdida [num]")
 plt.plot(loss_array)
 plt.show()
 
+#%% Guardamos el modelo y la configuracion
+
 PATH = './model/t_1_pigment_net.pth'
 torch.save(model.state_dict(), PATH)
 
+data_net = {
+            'bands' : 128, 
+            'classes' : {'p1':(160, 130, 10),   'p2':(230, 240, 110),   'p3':(240, 220, 70),    'p4':(240, 150, 70),
+                         'p5':(160, 80, 10),    'p6':(70, 40, 10),      'p7':(30, 30, 120),     'p8':(100, 70, 10),
+                         'p9':(30, 30, 30),     'p10':(30, 0, 60),      'p11':(60, 0, 110),     'p12':(100, 10, 200),
+                         'p13':(120, 100, 20),  'p14':(100, 160, 10),   'p15':(100, 100, 80),   'p16':(80, 110, 180),
+                         'p17':(40, 100, 200),  'p18':(70, 100, 150),   'p19':(120, 120, 140),  'p20':(100, 0, 0),
+                         'p21':(150, 0, 0),  'p22':(150, 0, 100),    'p23':(250, 150, 50),   'p24':(250, 50, 50),
+                         'p25':(250, 100, 0)}
+}
+
+with open("./model/t_1_pigment_net.json", "w") as write_file:
+    json.dump(data_net, write_file)
+
 # %% Testing
-t_tst = torch.tensor([d_trn[999]/data_std])
+t_tst = torch.tensor([d_trn[999]])
 t_tst = t_tst.float().to(device)
 o = model(t_tst)
 _, predicted = torch.max(o, 1)
