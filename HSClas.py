@@ -13,6 +13,12 @@ import spectral.io.envi as envi
 
 import numpy as np
 
+import json
+
+from HSModel import Network
+
+import torch
+
 import matplotlib as plt
 
 from PIL import Image
@@ -36,9 +42,13 @@ style_sheet = """
 #%% classe principal
 class DisplayImage(QMainWindow):
     #%% Constructor
+    
+    
     def __init__(self):
         super().__init__()
         self.initializeUI()
+        
+        
     #%% Configuracion Ventana Principal
     def initializeUI(self):
         """Tamaño de ventana."""
@@ -85,11 +95,10 @@ class DisplayImage(QMainWindow):
         open_act = QAction('Abrir...', self)
         open_act.setShortcut('Ctrl+A')
         open_act.triggered.connect(self.openImageFile)
-        '''
+
         procesa_act = QAction('Procesar', self) 
         procesa_act.setShortcut('Ctrl+P')
         procesa_act.triggered.connect(self.procesaImagen)
-        '''
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -100,6 +109,7 @@ class DisplayImage(QMainWindow):
         file_menu.addAction(open_act)
         
         procesa_menu = menu_bar.addMenu('Procesar')
+        procesa_menu.addAction(procesa_act)
         
         
     #%% Dialog de archivos , despliega la primera imagen
@@ -112,64 +122,64 @@ class DisplayImage(QMainWindow):
 
         img = envi.open(hdr_file, float_file)
         
-        data_img = img[:,:,:]
+        # este es ek arreglo que tiene los datos del archivo hiperespectral
+        self.data_img = img[:,:,:]
 
-        l, r, b = data_img.shape
+        l, r, b = self.data_img.shape
 
         tipo = (l, r, 3)
 
         x = 0
         y = 0
 
+        self.data = np.zeros(tipo, dtype=np.uint8)
 
-        data = np.zeros(tipo, dtype=np.uint8)
-
-        for largo in data_img:
+        for largo in self.data_img:
             for ancho in largo:
                 b1 = int(ancho[40] * 255)
                 b2 = int(ancho[20] * 255)
                 b3 = int(ancho[10] * 255)
-                data[x][y] = [b1, b2, b3]
+                self.data[x][y] = [b1, b2, b3]
                 y = y + 1
             x = x + 1
             y = 0
         
-        image = QImage(data.data, data.shape[1], data.shape[0], QImage.Format_RGB888)
+        image = QImage(self.data.data, self.data.shape[1], self.data.shape[0], QImage.Format_RGB888)
         
         self.original_label.setPixmap(QPixmap.fromImage(image).scaled(self.original_label.width(), 
                                                                       self.original_label.height(), 
                                                                       Qt.KeepAspectRatioByExpanding))
         
-        
-        '''
-        if image_file:
-            image = QImage() # Create QImage instance
-            image.load(image_file)
-            # Set the pixmap for the original_label using the QImage instance
-            self.original_label.setPixmap(QPixmap.fromImage(image).scaled(
-                    self.original_label.width(), self.original_label.height(), Qt.KeepAspectRatioByExpanding))
 
-            # Display the image that has been converted from the OpenCV Mat object to a Qt QImage
-            converted_image = self.convertCVToQImage(image_file)
-            self.opencv_label.setPixmap(QPixmap.fromImage(converted_image).scaled(
-                self.opencv_label.width(), self.opencv_label.height(), Qt.KeepAspectRatioByExpanding))
-            self.adjustSize() # Adjust the size of the main window to better fit its contents   
-        else:
-            QMessageBox.information(self, "Error",
-                "No pude abrir el Archivo ", QMessageBox.Ok)'''
+    #%% procesa imagen
+    def procesaImagen(self):
+        json_file, _ = QFileDialog.getOpenFileName(self, "Abrir ...", 
+            os.getenv('HOME'), "JSON (*.json)")
+        a_file = json_file.split('.')
+        model_file = a_file[0] + ".pth"
+        with open(json_file, "r") as read_file:
+            data_json = json.load(read_file)
+        bands = data_json['bands']
+        device_str = data_json['device']
+        clases_rgb = data_json['classes']
+        classes = []
+        device = torch.device(device_str)
 
-    def convertCVToQImage(self, image_file):
-        """Demonstrates how to load a cv image and convert the image to a Qt QImage. 
-        Returns the converted Qimage."""
-        cv_image = cv2.imread(image_file)
+        for x in clases_rgb :
+            classes.append(x)
         
-        # Get the shape of the image, height * width * channels. BGR/RGB/HSV images have 3 channels
-        height, width, channels = cv_image.shape # Format: (rows, columns, channels)
-        # Number of bytes required by the image pixels in a row; dependency on the number of channels
-        bytes_per_line = width * channels
-        # Create instance of QImage using data from cv_image
-        converted_Qt_image = QImage(cv_image, width, height, bytes_per_line, QImage.Format_RGB888)
-        return converted_Qt_image
+        model = Network(bands, classes)
+        
+        model.load_state_dict(torch.load(model_file))
+        
+        model.eval()
+        
+        model.to(device)
+        
+        
+        
+        
+
 
 #%% script principal
 if __name__ == '__main__':

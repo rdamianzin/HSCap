@@ -2,6 +2,9 @@ import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
 import json
+from spectral import *
+
+import spectral.io.envi as envi
 
 import torch
 import torch.nn as nn
@@ -39,6 +42,8 @@ with open("./model/t_1_pigment_net.json", "r") as read_file:
     
 bands = data['bands']
 
+device_str = data['device']
+
 clases_rgb = data['classes']
 
 classes = []
@@ -46,7 +51,7 @@ classes = []
 for x in clases_rgb :
     classes.append(x)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(device_str)
 print(device)
 
 model = Network(bands, classes)
@@ -54,4 +59,30 @@ model = Network(bands, classes)
 model.load_state_dict(torch.load('./model/t_1_pigment_net.pth'))
 
 model.eval()
+
+model.to(device)
+
+img = envi.open('./img/004.hdr', "./img/004.float")
+
+data_img = img[:, :,:]
+
+t_prueba = torch.tensor([data_img[50][50]])
+
+t_prueba = t_prueba.float().to(device)
+
+outputs = model(t_prueba)
+
+x = torch.zeros(1, 25).to(device)
+
+y = torch.gt(outputs, x)
+
+n = torch.count_nonzero(y).item()
+
+if n > 1 :
+    resultado = 'negro'
+else:
+    _, predicted = torch.max(outputs, 1)
+    resultado = classes[predicted[0]
+
+
 
