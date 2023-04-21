@@ -127,12 +127,12 @@ class DisplayImage(QMainWindow):
 
         l, r, b = self.data_img.shape
 
-        tipo = (l, r, 3)
+        self.tipo = (l, r, 3)
 
         x = 0
         y = 0
 
-        self.data = np.zeros(tipo, dtype=np.uint8)
+        self.data = np.zeros(self.tipo, dtype=np.uint8)
 
         for largo in self.data_img:
             for ancho in largo:
@@ -176,8 +176,35 @@ class DisplayImage(QMainWindow):
         
         model.to(device)
         
+        data_procesada = np.zeros(self.tipo, dtype=np.uint8)
         
+        x = 0
+        y = 0
         
+        for largo in self.data_img:
+            for ancho in largo:
+                t_prueba = torch.tensor([ancho])
+                t_prueba = t_prueba.float().to(device)
+                outputs = model(t_prueba)
+                t_zero = torch.zeros(1, 25).to(device)
+                t_gt = torch.gt(outputs, t_zero)
+                n = torch.count_nonzero(t_gt).item()
+                if n == 1 :
+                    _, predicted = torch.max(outputs, 1)
+                    resultado = clases_rgb[classes[predicted[0]]]
+                else:
+                    resultado = [0, 0, 0]
+                b1, b2, b3 = resultado
+                data_procesada[x][y] = [b1, b2, b3]
+                print(x, y)
+                y = y +1
+            y = 0
+            x = x + 1
+            image = QImage(data_procesada.data, data_procesada.shape[1], data_procesada.shape[0], QImage.Format_RGB888)
+        
+            self.opencv_label.setPixmap(QPixmap.fromImage(image).scaled(self.opencv_label.width(), 
+                                                                      self.opencv_label.height(), 
+                                                                      Qt.KeepAspectRatioByExpanding))
         
 
 
