@@ -18,10 +18,13 @@ class PQLabel(QLabel):
     def __init__(self, *args):
         super().__init__(*args)
         self.se_puede_pintar = False 
-        self.pixmap = QPixmap()
+        self.pixmap = QPixmap(600, 300)
         self.pixmap.fill(Qt.white)
+        self.setPixmap(self.pixmap)
         self.painter = QPainter()
         self.pen = QPen()
+        self.pen_color = QColor('#000000')
+        self.pen.setColor(self.pen_color)
         self.last_x = None
         self.last_y = None
         self.previous_pos = None
@@ -49,20 +52,23 @@ class PQLabel(QLabel):
 
         self.previous_pos = current_pos
         self.update()
-        print(self.previous_pos, current_pos)
-        QWidget.mouseMoveEvent(self, event)
+        #QWidget.mouseMoveEvent(self, event)
 
         # Update the origin for next time.
         self.last_x = event.x()
         self.last_y = event.y()
+        print(self.last_x, self.last_y)
 
     def mouseReleaseEvent(self, event):
         self.last_x = None
         self.last_y = None
 
     def carga_archivo(self):
+        print("Cargando")
         self.imagen, self.data_img = qu.openImageFile(self)
+        print(self.data_img)
         self.pixmap = QPixmap.fromImage(self.imagen)
+        self.setPixmap(self.pixmap)
         self.update()
 
 
